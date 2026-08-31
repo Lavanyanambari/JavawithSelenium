@@ -1,20 +1,169 @@
 <!DOCTYPE html>
 <html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>September Challenge Tracker</title>
+
+<style>
+body{
+    font-family:Arial,sans-serif;
+    background:#f4f4f4;
+    padding:20px;
+}
+
+.container{
+    max-width:800px;
+    margin:auto;
+    background:white;
+    padding:25px;
+    border-radius:15px;
+    box-shadow:0 0 10px rgba(0,0,0,0.15);
+}
+
+h1{
+    text-align:center;
+}
+
+select{
+    width:100%;
+    padding:12px;
+    font-size:16px;
+    margin-bottom:20px;
+}
+
+.task{
+    padding:10px;
+    margin:8px 0;
+    background:#f8f8f8;
+    border-radius:8px;
+}
+
+.task input{
+    transform:scale(1.2);
+    margin-right:10px;
+}
+
+.progress-container{
+    width:100%;
+    background:#ddd;
+    border-radius:20px;
+    margin-top:20px;
+}
+
+.progress-bar{
+    height:30px;
+    width:0%;
+    background:#4CAF50;
+    color:white;
+    text-align:center;
+    line-height:30px;
+    border-radius:20px;
+}
+</style>
+
+</head>
 <body>
 
-<h1>September Challenge Tracker</h1>
+<div class="container">
+
+<h1>🏆 September Challenge Tracker</h1>
 
 <select id="dateSelect"></select>
 
+<div id="taskList"></div>
+
+<div class="progress-container">
+    <div class="progress-bar" id="progressBar">0%</div>
+</div>
+
+<h3 id="status">0/10 Completed</h3>
+
+</div>
+
 <script>
+
+const habits = [
+"Water Only",
+"No Sugar",
+"8 Hours Sleep",
+"5K Steps Daily",
+"Exercise",
+"Suryanamaskar 6 Sets",
+"Cold Shower",
+"Social Media Less Than 2 Hours",
+"2 Favorite Songs",
+"Study / Practice 3 Hours"
+];
+
 const dateSelect = document.getElementById("dateSelect");
+const taskList = document.getElementById("taskList");
 
 for(let i=1;i<=30;i++){
-  const option=document.createElement("option");
-  option.textContent="September "+i;
-  option.value=i;
-  dateSelect.appendChild(option);
+    let option=document.createElement("option");
+    option.value="sep"+i;
+    option.textContent="September "+i;
+    dateSelect.appendChild(option);
 }
+
+function loadTasks(){
+
+    const key=dateSelect.value;
+    const saved=JSON.parse(localStorage.getItem(key))
+        || new Array(habits.length).fill(false);
+
+    taskList.innerHTML="";
+
+    habits.forEach((habit,index)=>{
+
+        const div=document.createElement("div");
+        div.className="task";
+
+        const checkbox=document.createElement("input");
+        checkbox.type="checkbox";
+        checkbox.checked=saved[index];
+
+        checkbox.addEventListener("change",()=>{
+
+            saved[index]=checkbox.checked;
+            localStorage.setItem(key,JSON.stringify(saved));
+
+            updateProgress(saved);
+        });
+
+        div.appendChild(checkbox);
+        div.appendChild(document.createTextNode(habit));
+
+        taskList.appendChild(div);
+    });
+
+    updateProgress(saved);
+}
+
+function updateProgress(data){
+
+    const completed=data.filter(x=>x).length;
+
+    const percent=Math.round(
+        completed/habits.length*100
+    );
+
+    document.getElementById("progressBar").style.width=
+        percent+"%";
+
+    document.getElementById("progressBar").innerHTML=
+        percent+"%";
+
+    document.getElementById("status").innerHTML=
+        completed+"/10 Completed";
+}
+
+dateSelect.addEventListener("change",loadTasks);
+
+dateSelect.selectedIndex=0;
+
+loadTasks();
+
 </script>
 
 </body>
