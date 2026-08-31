@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>September Challenge Tracker</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #f5f5f5;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 700px;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 0 10px rgba(0,0,0,.1);
+}
+
+h1 {
+    text-align: center;
+}
+
+.date-selector {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+.task {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    margin: 5px 0;
+    background: #fafafa;
+    border-radius: 8px;
+}
+
+.task input {
+    margin-right: 10px;
+    transform: scale(1.4);
+}
+
+.progress-container {
+    background: #ddd;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 15px;
+}
+
+.progress-bar {
+    height: 25px;
+    width: 0%;
+    background: #4CAF50;
+    color: white;
+    text-align: center;
+    line-height: 25px;
+    font-weight: bold;
+}
+
+.summary {
+    margin-top: 20px;
+    padding: 15px;
+    background: #eef7ff;
+    border-radius: 10px;
+}
+
+table {
+    width: 100%;
+    margin-top: 15px;
+    border-collapse: collapse;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+}
+
+th {
+    background: #4CAF50;
+    color: white;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🏆 September Challenge Tracker</h1>
+
+<select id="dateSelect" class="date-selector"></select>
+
+<div id="tasks"></div>
+
+<div class="progress-container">
+<div id="progressBar" class="progress-bar">0%</div>
+</div>
+
+<div class="summary">
+<h3>Today's Completion</h3>
+<div id="status">0/10 Completed</div>
+</div>
+
+<h3>Monthly Overview</h3>
+
+<table>
+<thead>
+<tr>
+<th>Date</th>
+<th>% Complete</th>
+</tr>
+</thead>
+
+<tbody id="monthlyTable"></tbody>
+</table>
+
+</div>
+
+<script>
+
+const habits = [
+"Water 4 litres daily,
+"No Sugar",
+"8 Hours Sleep",
+"5K Steps Daily",
+"Exercise",
+"Suryanamaskar 6 Sets",
+"Cold Shower",
+"Social Media < 2 Hours",
+"2 Favorite Songs",
+"Study / Practice 3 Hours"
+];
+
+const dateSelect = document.getElementById("dateSelect");
+
+for(let i=1;i<=30;i++){
+let option=document.createElement("option");
+option.value=`2026-09-${String(i).padStart(2,'0')}`;
+option.text=`September ${i}`;
+dateSelect.appendChild(option);
+}
+
+function getData(date){
+return JSON.parse(localStorage.getItem(date)) || Array(10).fill(false);
+}
+
+function saveData(date,data){
+localStorage.setItem(date,JSON.stringify(data));
+}
+
+function renderTasks(){
+
+const date=dateSelect.value;
+const taskDiv=document.getElementById("tasks");
+taskDiv.innerHTML="";
+
+let data=getData(date);
+
+habits.forEach((habit,index)=>{
+
+const row=document.createElement("div");
+row.className="task";
+
+const cb=document.createElement("input");
+cb.type="checkbox";
+cb.checked=data[index];
+
+cb.addEventListener("change",()=>{
+
+data[index]=cb.checked;
+saveData(date,data);
+
+updateProgress();
+loadMonthly();
+
+});
+
+const label=document.createElement("label");
+label.innerText=habit;
+
+row.appendChild(cb);
+row.appendChild(label);
+
+taskDiv.appendChild(row);
+
+});
+
+updateProgress();
+}
+
+function updateProgress(){
+
+const date=dateSelect.value;
+const data=getData(date);
+
+const completed=data.filter(x=>x).length;
+const percent=Math.round((completed/10)*100);
+
+document.getElementById("progressBar").style.width=percent+"%";
+document.getElementById("progressBar").innerText=percent+"%";
+
+document.getElementById("status").innerHTML=
+`${completed}/10 Completed`;
+
+}
+
+function loadMonthly(){
+
+const table=document.getElementById("monthlyTable");
+table.innerHTML="";
+
+for(let i=1;i<=30;i++){
+
+let date=`2026-09-${String(i).padStart(2,'0')}`;
+
+let data=getData(date);
+
+let completed=data.filter(x=>x).length;
+let percent=Math.round((completed/10)*100);
+
+table.innerHTML += `
+<tr>
+<td>Sep ${i}</td>
+<td>${percent}%</td>
+</tr>`;
+}
+}
+
+dateSelect.value="2026-09-01";
+
+dateSelect.addEventListener("change",renderTasks);
+
+renderTasks();
+loadMonthly();
+
+</script>
+
+</body>
+</html>
