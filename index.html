@@ -147,6 +147,14 @@ table {
     overflow: hidden;
     border-radius: 10px;
 }
+.task.dragging {
+    opacity: 0.5;
+    background: #dff0ff;
+}
+
+.task {
+    cursor: move;
+}
 
 th {
     background: #4CAF50;
@@ -246,8 +254,9 @@ function loadTasks(){
 
     habits.forEach((habit,index)=>{
 
-    const div=document.createElement("div");
-    div.className="task";
+    const row=document.createElement("div");
+row.className="task";
+row.draggable = true;
 
     const checkbox=document.createElement("input");
     checkbox.type="checkbox";
@@ -393,6 +402,53 @@ function loadMonthlyOverview() {
 
     document.getElementById("totalCompleted").innerText =
         totalCompleted;
+}
+let draggedItem = null;
+
+document.addEventListener('dragstart', function(e) {
+    if (e.target.classList.contains('task')) {
+        draggedItem = e.target;
+        e.target.classList.add('dragging');
+    }
+});
+
+document.addEventListener('dragend', function(e) {
+    if (e.target.classList.contains('task')) {
+        e.target.classList.remove('dragging');
+    }
+});
+
+document.addEventListener('dragover', function(e) {
+    e.preventDefault();
+
+    const container = document.getElementById('tasks');
+    const afterElement = getDragAfterElement(container, e.clientY);
+
+    if (afterElement == null) {
+        container.appendChild(draggedItem);
+    } else {
+        container.insertBefore(draggedItem, afterElement);
+    }
+});
+
+function getDragAfterElement(container, y) {
+    const draggableElements = [...container.querySelectorAll('.task:not(.dragging)')];
+
+    return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+
+        if (offset < 0 && offset > closest.offset) {
+            return {
+                offset: offset,
+                element: child
+            };
+        } else {
+            return closest;
+        }
+    }, {
+        offset: Number.NEGATIVE_INFINITY
+    }).element;
 }
 
 </script>
