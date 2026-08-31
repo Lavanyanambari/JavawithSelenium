@@ -147,7 +147,27 @@ tr:hover {
 
 <h3 id="status">0/10 Completed</h3>
 
+
 </div>
+<h2>Monthly Overview</h2>
+
+<div style="margin-bottom:15px;">
+    <b>Monthly Average:</b> <span id="avgCompletion">0%</span><br>
+    <b>Best Day:</b> <span id="bestDay">N/A</span><br>
+    <b>Total Habits Completed:</b> <span id="totalCompleted">0</span>
+</div>
+
+<table border="1" width="100%" cellpadding="8" cellspacing="0">
+    <thead>
+        <tr style="background:#4CAF50;color:white;">
+            <th>Date</th>
+            <th>% Complete</th>
+            <th>Completed</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody id="monthlyOverview"></tbody>
+</table>
 
 <script>
 
@@ -205,7 +225,8 @@ function loadTasks(){
         taskList.appendChild(div);
     });
 
-    updateProgress(saved);
+   updateProgress(saved);
+   loadMonthlyOverview();
 }
 
 function updateProgress(data){
@@ -231,6 +252,62 @@ dateSelect.addEventListener("change",loadTasks);
 dateSelect.selectedIndex=0;
 
 loadTasks();
+
+function loadMonthlyOverview() {
+
+    let tbody = document.getElementById("monthlyOverview");
+    tbody.innerHTML = "";
+
+    let totalPercent = 0;
+    let totalCompleted = 0;
+    let bestPercent = 0;
+    let bestDay = "N/A";
+
+    for(let i=1;i<=30;i++){
+
+        const key = "sep" + i;
+
+        const data =
+            JSON.parse(localStorage.getItem(key))
+            || new Array(habits.length).fill(false);
+
+        const completed =
+            data.filter(x => x).length;
+
+        const percent =
+            Math.round((completed / habits.length) * 100);
+
+        totalPercent += percent;
+        totalCompleted += completed;
+
+        if(percent > bestPercent){
+            bestPercent = percent;
+            bestDay = "Sep " + i;
+        }
+
+        let status = "❌";
+        if(percent >= 100) status = "🏆";
+        else if(percent >= 80) status = "✅";
+        else if(percent >= 50) status = "🟡";
+
+        tbody.innerHTML += `
+        <tr>
+            <td>Sep ${i}</td>
+            <td>${percent}%</td>
+            <td>${completed}/10</td>
+            <td>${status}</td>
+        </tr>`;
+    }
+
+    document.getElementById("avgCompletion").innerText =
+        Math.round(totalPercent / 30) + "%";
+
+    document.getElementById("bestDay").innerText =
+        bestDay + " (" + bestPercent + "%)";
+
+    document.getElementById("totalCompleted").innerText =
+        totalCompleted;
+}
 
 </script>
 
